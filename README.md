@@ -8,7 +8,7 @@ IDP-o cuts a protein sequence into 6 long fragments, with overlap of 2 residues 
 
 ## Build docker image
 ```bash
-docker build --platform=linux/amd64 . -t IDP-o
+docker build --platform=linux/amd64 . -t idp-o
 ```
 
 ## Download the foldcomp database and generate the foldcomp fasta file
@@ -24,7 +24,7 @@ IDP-o needs a specially formatted fasta file to work properly. The format is:
 Such file is not directly distributed by foldcomp, but can be easily generated. We provide a convenience script to automate the download of the foldcomp database and the creation of this special fasta file:
 
 ```bash
-docker run -v $(pwd):/data --entrypoint python IDP-o /IDP-o/scripts/prepare_foldcomp_fasta.py --workdir /data
+docker run -v $(pwd):/data --entrypoint python idp-o /IDP-o/scripts/prepare_foldcomp_fasta.py --workdir /data
 ```
 
 This will download the `afdb_uniprot_v4` foldcomp database in the current directory (~1.1 T), and generate the `afdb_uniprot_v4.fasta` file needed to run IDP-o
@@ -33,7 +33,7 @@ This will download the `afdb_uniprot_v4` foldcomp database in the current direct
 ## Generating ensembles
 ```bash
 docker run -v $(pwd):/data --gpus 1 \
-  IDP-o \
+  idp-o \
     --sequence DLIVERANDSANDRDANDCARLDANDMICHELEANDLDHIEANDFADIDANDSTEFANDANDISTVANANDALDERTANDDLIVERAGAINPLASDTHERS \
     --outpath /data/example/ensemble.h5 \
     --scratch_folder /data/example/ \
