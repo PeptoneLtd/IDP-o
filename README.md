@@ -3,11 +3,17 @@
 [![bioRxiv](https://img.shields.io/badge/bioRxiv-2025.10.18.680935-b31b1b.svg)](https://www.biorxiv.org/content/10.1101/2025.10.18.680935v2) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17306061.svg)](https://doi.org/10.5281/zenodo.17306061)
 
 IDP-o cuts a protein sequence into 6 long fragments, with overlap of 2 residues between fragments. Searches in a structure database, then stitches those fragments together to make an ensemble of configurations. Configurations have hydrogens inferred so one can use it directly in downstream tasks.
+
 ![IDP-o workflow](assets/idp-o.png)
 
 
 ## Build docker image
 ```bash
+# Clone the repository
+git clone https://github.com/PeptoneLtd/IDP-o
+cd IDP-o
+
+# Build Docker container
 docker build --platform=linux/amd64 . -t idp-o
 ```
 
