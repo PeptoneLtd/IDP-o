@@ -1,6 +1,6 @@
 # IDP-o: Fragment-based Intrinsically Disordered Protein Ensemble Generator
 
-[![bioRxiv](https://img.shields.io/badge/bioRxiv-2025.10.18.680935-b31b1b.svg)](https://www.biorxiv.org/content/10.1101/2025.10.18.680935v2) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17306061.svg)](https://doi.org/10.5281/zenodo.17306061)
+[![bioRxiv](https://img.shields.io/badge/bioRxiv-2025.10.18.680935-b31b1b.svg)](https://www.biorxiv.org/content/10.1101/2025.10.18.680935v2) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17306061.svg)](https://doi.org/10.5281/zenodo.17306061) [![Source Code](https://img.shields.io/badge/-PeptoneBench-000000?style=flat&logo=github&logoColor=ffffff&labelColor=gray)](https://github.com/PeptoneLtd/PeptoneBench) [![Source Code](https://img.shields.io/badge/-PepTron-000000?style=flat&logo=github&logoColor=ffffff&labelColor=gray)](https://github.com/PeptoneLtd/PepTron)
 
 IDP-o cuts a protein sequence into 6 long fragments, with overlap of 2 residues between fragments. Searches in a structure database, then stitches those fragments together to make an ensemble of configurations. Configurations have hydrogens inferred so one can use it directly in downstream tasks.
 
