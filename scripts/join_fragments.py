@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = ".96"
 
 from functools import partial
-from os.path import exists
+from os.path import isfile
 from time import time
 
 import jax
@@ -203,7 +203,8 @@ def build_ensemble(data, fragments, n_joins_to_attempt=500000):
     ].astype(bool)
     segments = (2 ** np.arange(16)[::-1])[bits]
     fragment_subsets = np.split(
-        np.array(fragments), segments[::-1][:-1].cumsum(),
+        np.array(fragments),
+        segments[::-1][:-1].cumsum(),
     )  # the [::-1] means you do smaller joins
 
     final_fragments = []
@@ -280,6 +281,7 @@ def main(
     joins_to_attempt_per_pairing,
     max_structures_in_ensemble,
     rmsd_sort=False,
+    overwrite=False,
 ):
     overlap, seq_len = 2, 6
     fragments = generate_fragments(sequence, overlap=overlap, seq_len=seq_len)
@@ -289,7 +291,7 @@ def main(
     for buf in backend.live_buffers():
         buf.delete()
 
-    if not exists(outpath):
+    if overwrite or not isfile(outpath):
         start = time()
         data = {}
         for fragment in fragments:
@@ -313,6 +315,8 @@ def main(
         t = infer_and_insert_hydrogens(t)
         end = time()
         t.save(outpath)
+        if outpath.endswith((".xtc", ".dcd")):
+            t[0].save(outpath[:-3] + "pdb")
         logger.info(f"{end - start:.0f} seconds for {len(seq)} residues")
 
 
@@ -329,6 +333,7 @@ if __name__ == "__main__":
     parser.add_argument("--joins_to_attempt_per_pairing", type=int, default=500000)
     parser.add_argument("--max_structures_in_ensemble", type=int, default=500000)
     parser.add_argument("--rmsd_sort", action="store_true", default=False)
+    parser.add_argument("--overwrite", action="store_true", default=False)
     args = parser.parse_args()
 
     main(
@@ -338,4 +343,5 @@ if __name__ == "__main__":
         args.joins_to_attempt_per_pairing,
         args.max_structures_in_ensemble,
         args.rmsd_sort,
+        args.overwrite,
     )

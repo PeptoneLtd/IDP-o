@@ -34,8 +34,16 @@ def main(
     max_structures_in_ensemble: int,
     exclude_cis_omega: bool = False,
     rmsd_sort: bool = False,
+    overwrite: bool = False,
 ) -> None:
     logger = logging.getLogger()
+    if os.path.isfile(args.outpath):
+        if overwrite:
+            logger.warning(f"overwriting existing ensemble file {outpath}")
+        else:
+            logger.warning(f"ensemble file {outpath} already exists, use --overwrite to overwrite it")
+            return
+
     standard_amino_acids = "ACDEFGHIKLMNPQRSTVWY"
     invalid_aa = [aa for aa in sequence if aa not in standard_amino_acids]
     if len(invalid_aa) > 0:
@@ -68,6 +76,7 @@ def main(
         joins_to_attempt_per_pairing,
         max_structures_in_ensemble,
         rmsd_sort,
+        overwrite,
     )
 
 
@@ -89,7 +98,7 @@ if __name__ == "__main__":
   e.g.
   >677
   LPYPAHLEILVQTLRYWIRDVSSL
-  denotes the entry relating to LPYPAHLEILVQTLRYWIRDVSSL in the FoldComp database begins at byte 677 in the foldcomp database file""",
+  denotes the entry relating to LPYPAHLEILVQTLRYWIRDVSSL in the FoldComp database begins at byte 677 in the database file""",
         default="/data/afdb/afdb_uniprot_v4.fasta",
     )
     parser.add_argument(
@@ -103,13 +112,18 @@ if __name__ == "__main__":
         default=1000,
         help="Max number of structures per fragment to extract",
     )
-    parser.add_argument("--outpath", help="Path to write ensemble to", required=True)
+    parser.add_argument(
+        "--outpath",
+        help="Path to write ensemble to. Supported formats: .h5, .xtc, .dcd, .pdb, .pdb.gz",
+        required=True,
+    )
     parser.add_argument("--scratch_folder", help="Folder to write intermediates to", required=False, default="/tmp")
     parser.add_argument(
         "--reduction_factor",
         type=int,
         default=1,
-        help="Factor by which to reduce the proportion of fasta searched, so 10 means only a tenth of the database will be searched",
+        help="Factor by which to reduce the proportion of fasta searched,"
+        " so 10 means only a tenth of the database will be searched",
     )
     parser.add_argument("--joins_to_attempt_per_pairing", type=int, default=500000)
     parser.add_argument("--max_structures_in_ensemble", type=int, default=100)
@@ -125,7 +139,9 @@ if __name__ == "__main__":
         default=False,
         help="Whether to sort by rmsd matrix and align each frame, for nicer visualization",
     )
+    parser.add_argument("--overwrite", action="store_true", default=False, help="overwrite any existing ensemble files")
     args = parser.parse_args()
+
     try:
         logger.info("building ensemble")
         main(
@@ -140,6 +156,7 @@ if __name__ == "__main__":
             max_structures_in_ensemble=args.max_structures_in_ensemble,
             exclude_cis_omega=args.exclude_cis_omega,
             rmsd_sort=args.rmsd_sort,
+            overwrite=args.overwrite,
         )
         logger.info("ensemble built")
 

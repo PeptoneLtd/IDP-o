@@ -48,6 +48,14 @@ if __name__ == "__main__":
         help="names of the useful columns in the csv",
     )
     parser.add_argument("--shuffle", action="store_true", help="generate the ensembles in shuffled order")
+    parser.add_argument(
+        "--format",
+        type=str,
+        default="xtc",
+        choices=["h5", "xtc", "pdb", "pdb.gz", "dcd"],
+        help="format of the output files",
+    )
+    parser.add_argument("--overwrite", action="store_true", help="overwrite any existing ensemble files")
     args = parser.parse_args()
 
     logging.basicConfig(
@@ -84,36 +92,34 @@ if __name__ == "__main__":
         logger.warning("set '--max_structures_in_ensemble' to actually generate the ensembles")
     else:
         if args.shuffle:
-            logger.info("shuffling generation order")
+            logger.info("shuffling generation order, for easy parallelization")
             df = df.sample(frac=1).reset_index(drop=True)
         for i, row in df.iterrows():
             logger.info(f"++++++++++++++++++++++++++++ {i / len(df):.3%} ++++++++++++++++++++++++++++")
             logger.info(f"name={row[name]}, len={len(row[fasta])}, fasta={row[fasta]}")
-            outpath = os.path.join(args.outfolder, f"{row[name]}.h5")
-            if os.path.isfile(outpath):
-                logger.warning(f"-> skipping already present '{outpath}'")
-            else:
-                scratch_folder = os.path.join("/tmp", f"tmp-{row[name]}")
-                os.makedirs(os.path.dirname(scratch_folder), exist_ok=True)
-                try:
-                    check_call(
-                        [
-                            "python3",
-                            f"{os.path.dirname(os.path.abspath(__file__))}/scripts/build_ensemble.py",
-                            "--sequence",
-                            row[fasta],
-                            "--outpath",
-                            outpath,
-                            "--scratch_folder",
-                            scratch_folder,
-                            "--max_structures_in_ensemble",
-                            str(args.max_structures_in_ensemble),
-                        ],
-                    )
-                    counter += 1
-                except Exception:
-                    error_msg = traceback.format_exc()
-                    logger.warning(error_msg)
-                    with open(os.path.splitext(outpath)[0] + ".txt", "w") as f:
-                        f.write(error_msg + "\n")
+            outpath = os.path.join(args.outfolder, f"{row[name]}.{args.format}")
+            scratch_folder = os.path.join("/tmp", f"tmp-{row[name]}")
+            os.makedirs(os.path.dirname(scratch_folder), exist_ok=True)
+            cmd = [
+                "python3",
+                f"{os.path.dirname(os.path.abspath(__file__))}/scripts/build_ensemble.py",
+                "--sequence",
+                row[fasta],
+                "--outpath",
+                outpath,
+                "--scratch_folder",
+                scratch_folder,
+                "--max_structures_in_ensemble",
+                str(args.max_structures_in_ensemble),
+            ]
+            if args.overwrite:
+                cmd.append("--overwrite")
+            try:
+                check_call(cmd)
+                counter += 1
+            except Exception:
+                error_msg = traceback.format_exc()
+                logger.warning(error_msg)
+                with open(os.path.splitext(outpath)[0] + ".txt", "w") as f:
+                    f.write(cmd + "\n" + error_msg + "\n")
     logger.info(f"generated {counter:_} ensembles")
